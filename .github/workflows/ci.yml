@@ -1,5 +1,5 @@
 ---
-name: Merge Atlantis Infra
+name: CI
 
 # Merge to "main"
 on:
@@ -18,8 +18,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-#        with:
-#          token: ${{ secrets.TEST_PAT }}
+        with:
+          token: ${{ secrets.TEST_PAT }}
 
       # Autobump version
       - name: Get BASE_IMAGE_VERSION
