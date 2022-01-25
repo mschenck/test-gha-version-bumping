@@ -1,5 +1,5 @@
 ---
-name: Merge Atlantis Infra
+name: CI
 
 # Merge to "main"
 on:
