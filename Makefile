@@ -1,5 +1,5 @@
 BASE_IMAGE_VERSION := v0.0.1
-BASE_IMAGE_REPO := "foo.example.com/base_image
+BASE_IMAGE_REPO := foo.example.com/base_image
 BASE_IMAGE := $(BASE_IMAGE_REPO):$(BASE_IMAGE_VERSION)
 
 PROJECT_MKFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
