@@ -1,0 +1,56 @@
+---
+name: Merge Atlantis Infra
+
+# Merge to "main"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+
+jobs:
+
+  # Build image on both pull request and merge to main
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+#        with:
+#          token: ${{ secrets.TEST_PAT }}
+
+      # Autobump version
+      - name: Get BASE_IMAGE_VERSION
+        id: current_version
+        run: echo "::set-output name=BASE_IMAGE_VERSION::$(awk '/^BASE_IMAGE_VERSION/{print $3}' Makefile | sed 's/v//')"
+
+      # https://github.com/marketplace/actions/increment-semantic-version
+      - name: Bump version
+        id: bump_version
+        uses: christian-draeger/increment-semantic-version@1.0.2
+        with:
+          current-version: ${{ steps.current_version.outputs.BASE_IMAGE_VERSION }}
+          version-fragment: 'bug'
+
+      - name: new BASE_IMAGE_VERSION
+        id: new_version
+        run: echo "::set-output name=NEW_BASE_IMAGE_VERSION::v${{ steps.bump_version.outputs.next-version }}"
+
+      - name: Update Makefile
+        run: sed -i 's/BASE_IMAGE_VERSION := v${{ steps.current_version.outputs.BASE_IMAGE_VERSION }}/BASE_IMAGE_VERSION := ${{ steps.new_version.outputs.NEW_BASE_IMAGE_VERSION }}/' Makefile
+
+      # Auto-commit Makefile version bump
+      # https://github.com/marketplace/actions/git-auto-commit
+      - name: Commit Makefile version bump
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Apply version bump of BASE_IMAGE_VERSION to ${{ steps.new_version.outputs.NEW_BASE_IMAGE_VERSION }}"
+          file_pattern: Makefile
+
+      - name: Build docker image
+        run: make build
+
+      - name: List docker image
+        run: docker images -a
